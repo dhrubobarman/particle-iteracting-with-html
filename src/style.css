@@ -110,7 +110,8 @@ canvas {
   max-width: 100%;
   max-height: 100%;
 }
-h1 {
+
+h1#caption {
   position: absolute;
   top: 50%;
   left: 0;
@@ -120,4 +121,13 @@ h1 {
   margin-inline: auto;
   border-top: 5px solid;
   user-select: none;
+  line-height: 1;
+}
+#hi {
+  position: relative;
+  max-width: max-content;
+  left: 50%;
+  top: 60px;
+  transform: translateX(-50%);
+  line-height: 1;
 }

@@ -10,6 +10,7 @@ const gradientColors = ["#F6FFA6", "#F3BCC8", "#E893CF", "#9376E0"];
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+ctx.strokeStyle = "white";
 
 const effect = new Effect({
   canvas,
@@ -18,6 +19,7 @@ const effect = new Effect({
   numberOfParticles: 300,
   gradientColors,
   friction: 0.1,
+  elementIds: ["caption", "hi"],
 });
 
 function animate() {
