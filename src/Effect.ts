@@ -8,16 +8,28 @@ export class Effect {
   numberofParticles: number;
   ctx: CanvasRenderingContext2D;
   mouse: { x: number; y: number; pressed: boolean; radius: number };
+  gradientColors: string[];
+  friction: number;
+  connectionDistance: number;
+  debug: boolean;
+  elementIds: string[] | null;
+  elements: DOMRect[];
   constructor({
     canvas,
     ctx,
     mouseRadius = 150,
     numberOfParticles = 300,
+    gradientColors = ["white", "gold", "orangered"],
+    friction = 0.2,
+    elementIds = null,
   }: {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     mouseRadius?: number;
     numberOfParticles?: number;
+    gradientColors?: string[];
+    friction?: number;
+    elementIds?: string[] | null;
   }) {
     this.canvas = canvas;
     this.width = this.canvas.width;
@@ -25,6 +37,11 @@ export class Effect {
     this.particles = [];
     this.numberofParticles = numberOfParticles;
     this.ctx = ctx;
+    this.gradientColors = gradientColors;
+    this.friction = friction;
+    this.debug = false;
+    this.elementIds = elementIds;
+    this.connectionDistance = 100;
     this.createParticles();
     this.applyGradient();
     this.mouse = {
@@ -33,7 +50,22 @@ export class Effect {
       pressed: false,
       radius: mouseRadius,
     };
+    this.elements = [];
 
+    if (this.elementIds) {
+      for (let index = 0; index < this.elementIds.length; index++) {
+        const element = this.elementIds[index];
+        this.elements.push(
+          document.getElementById(element)?.getBoundingClientRect() as DOMRect
+        );
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "d") {
+        this.debug = !this.debug;
+      }
+    });
     window.addEventListener("resize", () => {
       this.resize(window.innerWidth, window.innerHeight);
     });
@@ -62,16 +94,25 @@ export class Effect {
       particle.draw(ctx);
       particle.update();
     }
+    if (this.debug && this.elements?.length) {
+      for (let e = 0; e < this.elements.length; e++) {
+        ctx.strokeRect(
+          this.elements[e]?.x,
+          this.elements[e]?.y,
+          this.elements[e]?.width,
+          this.elements[e]?.height
+        );
+      }
+    }
   }
   connectParticles(ctx: CanvasRenderingContext2D) {
-    const maxDistance = 100;
     for (let a = 0; a < this.particles.length; a++) {
       const particleA = this.particles[a];
       for (let b = a; b < this.particles.length; b++) {
         const particleB = this.particles[b];
         const distance = this.calculateDistance(particleA, particleB);
-        if (distance < maxDistance) {
-          const opacity = 1 - distance / maxDistance;
+        if (distance < this.connectionDistance) {
+          const opacity = 1 - distance / this.connectionDistance;
           ctx.save();
           ctx.globalAlpha = opacity;
           ctx.strokeStyle = "white";
@@ -93,9 +134,11 @@ export class Effect {
       this.canvas.width,
       this.canvas.height
     );
-    gradient.addColorStop(0, "white");
-    gradient.addColorStop(0.5, "gold");
-    gradient.addColorStop(1, "orangered");
+    for (let c = 0; c < this.gradientColors.length; c++) {
+      const stop = c / (this.gradientColors.length - 1);
+      gradient.addColorStop(stop, this.gradientColors[c]);
+    }
+
     this.ctx.fillStyle = gradient;
   }
   resize(width: number, height: number) {
