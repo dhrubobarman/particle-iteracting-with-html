@@ -8,16 +8,22 @@ export class Effect {
   numberofParticles: number;
   ctx: CanvasRenderingContext2D;
   mouse: { x: number; y: number; pressed: boolean; radius: number };
+  gradientColors: string[];
+  friction: number;
   constructor({
     canvas,
     ctx,
     mouseRadius = 150,
     numberOfParticles = 300,
+    gradientColors = ["white", "gold", "orangered"],
+    friction = 0.2,
   }: {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     mouseRadius?: number;
     numberOfParticles?: number;
+    gradientColors?: string[];
+    friction?: number;
   }) {
     this.canvas = canvas;
     this.width = this.canvas.width;
@@ -25,6 +31,8 @@ export class Effect {
     this.particles = [];
     this.numberofParticles = numberOfParticles;
     this.ctx = ctx;
+    this.gradientColors = gradientColors;
+    this.friction = friction;
     this.createParticles();
     this.applyGradient();
     this.mouse = {
@@ -93,9 +101,11 @@ export class Effect {
       this.canvas.width,
       this.canvas.height
     );
-    gradient.addColorStop(0, "white");
-    gradient.addColorStop(0.5, "gold");
-    gradient.addColorStop(1, "orangered");
+    for (let c = 0; c < this.gradientColors.length; c++) {
+      const stop = c / (this.gradientColors.length - 1);
+      gradient.addColorStop(stop, this.gradientColors[c]);
+    }
+
     this.ctx.fillStyle = gradient;
   }
   resize(width: number, height: number) {

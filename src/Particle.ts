@@ -7,11 +7,11 @@ export class Particle {
   radius: number;
   vx: number;
   vy: number;
-  pushX: number;
-  pushY: number;
+
   friction: number;
+  gravity: number;
   constructor(effect: Effect) {
-    this.radius = Math.floor(Math.random() * 12 + 2);
+    this.radius = Math.floor(Math.random() * 7 + 3);
     this.effect = effect;
     this.x =
       this.radius + Math.random() * (this.effect.width - this.radius * 2);
@@ -19,9 +19,8 @@ export class Particle {
       this.radius + Math.random() * (this.effect.height - this.radius * 2);
     this.vx = Math.random() * 1 - 0.5;
     this.vy = Math.random() * 1 - 0.5;
-    this.pushX = 0;
-    this.pushY = 0;
-    this.friction = 0.95;
+    this.friction = 1 - (1 - 1 / this.radius) * this.effect.friction;
+    this.gravity = this.radius * 0.001;
   }
   draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
@@ -29,20 +28,10 @@ export class Particle {
     ctx.fill();
   }
   update() {
-    if (this.effect.mouse.pressed) {
-      const distance = this.effect.calculateDistance(this.effect.mouse, this);
-      const force = this.effect.mouse.radius / distance;
-      if (distance < this.effect.mouse.radius) {
-        const dx = this.x - this.effect.mouse.x;
-        const dy = this.y - this.effect.mouse.y;
-        const angle = Math.atan2(dy, dx);
-        this.pushX += Math.cos(angle) * force;
-        this.pushY += Math.sin(angle) * force;
-      }
-    }
     // move the particle
-    this.x += (this.pushX *= this.friction) + this.vx;
-    this.y += (this.pushY *= this.friction) + this.vy;
+    this.vy += this.gravity;
+    this.x += this.vx;
+    this.y += this.vy;
 
     // bounce the particle off the edges of the screen
     if (this.x < this.radius) {
